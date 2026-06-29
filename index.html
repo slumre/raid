@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crimson Oath — Guild Manager</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+<style>
+:root {
+  --bg: #f8f7f4;
+  --surface-0: #f1efe8;
+  --surface-1: #f7f6f2;
+  --surface-2: #ffffff;
+  --text-primary: #1a1a18;
+  --text-secondary: #4a4a46;
+  --text-muted: #888780;
+  --border: rgba(0,0,0,0.10);
+  --border-strong: rgba(0,0,0,0.18);
+  --radius: 8px;
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "SFMono-Regular", Consolas, monospace;
+  --fill-accent: #3b7dd8;
+  --on-accent: #ffffff;
+  --border-accent: #3b7dd8;
+  --text-accent: #1a5cb5;
+  --bg-accent: #e8f0fd;
+  --border-success: #86efac;
+  --text-success: #166534;
+  --bg-success: #dcfce7;
+  --border-danger: #fca5a5;
+  --text-danger: #991b1b;
+  --bg-danger: #fee2e2;
+  --border-warning: #fcd34d;
+  --text-warning: #92400e;
+  --bg-warning: #fef3c7;
+  --text-pro: #5b21b6;
+  --bg-pro: #ede9fe;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1c1a;
+    --surface-0: #141413;
+    --surface-1: #232320;
+    --surface-2: #2c2c29;
+    --text-primary: #f0ede8;
+    --text-secondary: #a8a49e;
+    --text-muted: #6b6864;
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.14);
+    --fill-accent: #4a8ee8;
+    --on-accent: #ffffff;
+    --border-accent: #4a8ee8;
+    --text-accent: #7eb3f5;
+    --bg-accent: #1a2d4a;
+    --border-success: #166534;
+    --text-success: #86efac;
+    --bg-success: #052e16;
+    --border-danger: #991b1b;
+    --text-danger: #fca5a5;
+    --bg-danger: #2d0a0a;
+    --border-warning: #92400e;
+    --text-warning: #fcd34d;
+    --bg-warning: #2d1a00;
+    --text-pro: #c4b5fd;
+    --bg-pro: #2e1065;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);font-family:var(--font-sans);font-size:13px;color:var(--text-primary);min-height:100vh}
+.app{max-width:780px;margin:0 auto;display:flex;flex-direction:column;min-height:100vh;background:var(--surface-2);border-left:0.5px solid var(--border);border-right:0.5px solid var(--border)}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;border-bottom:0.5px solid var(--border);background:var(--surface-1)}
+.guild-name{font-size:14px;font-weight:500}
+.guild-sub{font-size:11px;color:var(--text-muted)}
+.nav{display:flex;border-bottom:0.5px solid var(--border);background:var(--surface-1);padding:0 14px;overflow-x:auto}
+.nb{padding:7px 12px;font-size:12px;background:none;border:none;border-bottom:2px solid transparent;cursor:pointer;color:var(--text-secondary);margin-bottom:-0.5px;font-family:var(--font-sans);white-space:nowrap}
+.nb.on{color:var(--text-accent);border-bottom-color:var(--border-accent);font-weight:500}
+.nb:hover:not(.on){color:var(--text-primary)}
+.content{padding:12px 14px;flex:1}
+.screen{display:none}.screen.on{display:block}
+.sec{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.05em;margin:14px 0 6px}
+.sec:first-child{margin-top:0}
+.stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.sc{background:var(--surface-1);border-radius:var(--radius);padding:8px 10px}
+.sc-v{font-size:18px;font-weight:500}
+.sc-l{font-size:10px;color:var(--text-muted);margin-top:1px}
+.pinned{background:var(--bg-danger);border:0.5px solid var(--border-danger);border-radius:8px;padding:10px 12px;margin-bottom:12px}
+.pinned-lbl{font-size:10px;font-weight:500;color:var(--text-danger);text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px}
+.pinned-txt{font-size:12px;font-style:italic;line-height:1.5;color:var(--text-primary)}
+.pinned-by{font-size:10px;color:var(--text-muted);margin-top:3px}
+.notif{display:flex;gap:8px;align-items:flex-start;padding:9px 10px;border-radius:6px;background:var(--surface-1);border:0.5px solid var(--border);margin-bottom:5px;cursor:pointer}
+.notif:hover{border-color:var(--border-strong)}
+.ndot{width:6px;height:6px;border-radius:50%;background:var(--fill-accent);margin-top:4px;flex-shrink:0}
+.ntxt{font-size:12px;line-height:1.5}
+.nmeta{font-size:10px;color:var(--text-muted);margin-top:1px}
+.roster-table{width:100%;border-collapse:collapse;table-layout:fixed}
+.roster-table th{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.04em;padding:4px 5px;text-align:center;border-bottom:0.5px solid var(--border)}
+.roster-table th:nth-child(2){text-align:left}
+.rrow{border-bottom:0.5px solid var(--border);cursor:pointer}
+.rrow:hover td{background:var(--surface-1)}
+.rrow.expanded td{background:var(--surface-1)}
+.rrow td{padding:5px 5px;vertical-align:middle;background:var(--surface-2)}
+.rrow.expanded td{background:var(--surface-1)}
+.ava{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
+.rname{font-size:12px;font-weight:500}
+.rcls{font-size:10px;color:var(--text-muted)}
+.role-badge{font-size:10px;padding:1px 5px;border-radius:3px;font-weight:500}
+.role-T{background:#dbeafe;color:#1e40af}
+.role-H{background:#dcfce7;color:#166534}
+.role-D{background:#fce7f3;color:#9d174d}
+.sval{font-size:13px;font-weight:500;text-align:center;display:block;min-width:22px}
+.sv-hi{color:#16a34a}
+.sv-mid{color:var(--text-primary)}
+.sv-lo{color:#d97706}
+.sv-crit{color:#dc2626}
+.sv-unknown{color:var(--text-muted);font-size:12px}
+.mood-dot{width:8px;height:8px;border-radius:50%;margin:0 auto;cursor:help}
+.expand-wrap{padding:10px 12px;background:var(--surface-1)}
+.exp-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 20px;margin-bottom:9px}
+.exp-row{display:flex;align-items:center;justify-content:space-between;gap:6px}
+.exp-label{font-size:11px;color:var(--text-muted)}
+.exp-right{display:flex;align-items:center;gap:5px}
+.reveal-tag{font-size:10px;padding:1px 5px;border-radius:3px;background:var(--bg-warning);color:var(--text-warning);cursor:pointer;white-space:nowrap;border:none;font-family:var(--font-sans)}
+.drama-tag{font-size:10px;padding:2px 6px;border-radius:3px;margin-right:3px;margin-bottom:3px;display:inline-block}
+.tag-warn{background:var(--bg-warning);color:var(--text-warning)}
+.tag-danger{background:var(--bg-danger);color:var(--text-danger)}
+.tag-info{background:var(--bg-accent);color:var(--text-accent)}
+.exp-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:7px}
+.btn{padding:5px 10px;border-radius:var(--radius);border:0.5px solid var(--border-strong);background:transparent;cursor:pointer;font-size:11px;color:var(--text-primary);font-family:var(--font-sans)}
+.btn:hover{background:var(--surface-0)}
+.btn-p{background:var(--fill-accent);color:var(--on-accent);border-color:var(--fill-accent)}
+.btn-p:hover{opacity:.9}
+.btn-d{background:var(--bg-danger);color:var(--text-danger);border-color:var(--border-danger)}
+.open-slot{border:1.5px dashed var(--border-strong);border-radius:6px;padding:12px;text-align:center;cursor:pointer;margin-bottom:6px}
+.open-slot:hover{background:var(--surface-1)}
+.app-card{background:var(--surface-1);border:0.5px solid var(--border);border-radius:8px;padding:11px 12px;margin-bottom:7px}
+.app-header{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+.app-info{flex:1;min-width:120px}
+.app-name{font-size:13px;font-weight:500}
+.app-cls{font-size:11px;color:var(--text-muted)}
+.app-status{font-size:10px;padding:2px 6px;border-radius:3px}
+.st-applied{background:var(--bg-accent);color:var(--text-accent)}
+.st-negotiating{background:var(--bg-warning);color:var(--text-warning)}
+.st-poach{background:var(--bg-pro);color:var(--text-pro)}
+.known-stats{display:flex;gap:12px;margin-bottom:7px;flex-wrap:wrap}
+.ks{font-size:11px}
+.ks-label{color:var(--text-muted)}
+.guild-badge{font-size:10px;padding:2px 6px;border-radius:3px;background:var(--surface-0);border:0.5px solid var(--border);color:var(--text-secondary)}
+.bottom-bar{padding:10px 14px;border-top:0.5px solid var(--border);background:var(--surface-1);display:flex;align-items:center;justify-content:space-between;position:sticky;bottom:0}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:100;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--surface-2);border:0.5px solid var(--border-strong);border-radius:12px;padding:18px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:14px;font-weight:500;margin-bottom:4px}
+.modal-body{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:14px;white-space:pre-line}
+.modal-actions{display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+<div class="topbar">
+  <div><div class="guild-name">⚔ Crimson Oath</div><div class="guild-sub">Mid-tier progression · Vaultbreaker tier</div></div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <span style="font-size:11px;padding:3px 7px;border-radius:4px;background:var(--surface-0);border:0.5px solid var(--border);color:var(--text-secondary)" id="day-lbl">Day 1 — Mon</span>
+    <button class="btn" onclick="exportSave()" title="Export save"><i class="ti ti-download"></i></button>
+    <button class="btn" onclick="importSave()" title="Import save"><i class="ti ti-upload"></i></button>
+  </div>
+</div>
+<div class="nav">
+  <button class="nb on" onclick="nav('dashboard',this)">Dashboard</button>
+  <button class="nb" onclick="nav('roster',this)">Roster</button>
+  <button class="nb" onclick="nav('recruit',this)">Recruit</button>
+  <button class="nb" onclick="nav('raid',this)">Raid night</button>
+  <button class="nb" onclick="nav('history',this)">History</button>
+</div>
+<div class="content">
+
+<div class="screen on" id="s-dashboard">
+  <div class="pinned">
+    <div class="pinned-lbl"><i class="ti ti-pin" style="font-size:11px"></i> Pinned in #general</div>
+    <div class="pinned-txt">"you people are an embarrassment. i carried this guild for TWO YEARS and this is what i get. good luck clearing Vaultbreaker without me. you'll need it."</div>
+    <div class="pinned-by">— Thunderkeg, 3 days ago · still pinned because nobody can agree to unpin it</div>
+  </div>
+  <div class="stat-row">
+    <div class="sc"><div class="sc-v" id="d-members">8</div><div class="sc-l">Members</div></div>
+    <div class="sc"><div class="sc-v" id="d-morale">62%</div><div class="sc-l">Avg morale</div></div>
+    <div class="sc"><div class="sc-v" id="d-prog">0/7</div><div class="sc-l">Bosses killed</div></div>
+    <div class="sc"><div class="sc-v" id="d-rank">#47</div><div class="sc-l">Server rank</div></div>
+  </div>
+  <div class="sec">Notifications</div>
+  <div id="notif-list"></div>
+</div>
+
+<div class="screen" id="s-roster">
+  <div class="sec">Active roster <span style="color:var(--text-muted);font-weight:400;text-transform:none;font-size:11px" id="roster-count"></span></div>
+  <div style="overflow-x:auto">
+  <table class="roster-table">
+    <thead><tr>
+      <th style="width:32px"></th>
+      <th style="text-align:left">Name</th>
+      <th style="width:52px">Role</th>
+      <th style="width:36px" title="Role skill">Skill</th>
+      <th style="width:36px" title="Mechanical skill">Mech</th>
+      <th style="width:36px" title="Reliability">Reli</th>
+      <th style="width:36px" title="Ego">Ego</th>
+      <th style="width:36px" title="Composure">Comp</th>
+      <th style="width:36px" title="Coachability">Coach</th>
+      <th style="width:36px" title="Loyalty">Loyal</th>
+      <th style="width:36px" title="Commitment">Commit</th>
+      <th style="width:36px" title="Transparency">Trans</th>
+      <th style="width:36px" title="IRL Stability">IRL</th>
+      <th style="width:32px">Mood</th>
+      <th style="width:18px"></th>
+    </tr></thead>
+    <tbody id="roster-body"></tbody>
+  </table>
+  </div>
+  <div style="margin-top:10px;font-size:10px;color:var(--text-muted);padding:5px 8px;background:var(--surface-1);border-radius:5px;border:0.5px solid var(--border)">
+    <i class="ti ti-eye" style="font-size:11px;vertical-align:-1px"></i> Grey <span style="color:var(--text-muted);font-weight:500">?</span> = hidden stat · click a row to expand and see how to reveal it
+  </div>
+  <div style="margin-top:10px">
+    <div class="sec">Open slots</div>
+    <div class="open-slot" onclick="nav('recruit',document.querySelectorAll('.nb')[2])">
+      <i class="ti ti-user-plus" style="font-size:16px;color:var(--text-muted)"></i>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:3px">2 open slots · Go to recruit tab</div>
+      <div style="font-size:10px;color:var(--text-accent);margin-top:1px">Priority: second tank or off-healer</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-recruit">
+  <div class="sec">Applications <span style="color:var(--text-muted);font-weight:400;text-transform:none;font-size:11px" id="app-count"></span></div>
+  <div id="app-list"></div>
+  <div class="sec" style="margin-top:16px">Post recruitment notice</div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+    <div class="open-slot" onclick="postRecruit('tank')">
+      <i class="ti ti-shield" style="font-size:16px;color:var(--text-muted)"></i>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Tank / off-healer</div>
+      <div style="font-size:10px;color:var(--text-accent)">Priority need</div>
+    </div>
+    <div class="open-slot" onclick="postRecruit('open')">
+      <i class="ti ti-users" style="font-size:16px;color:var(--text-muted)"></i>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px">Open application</div>
+      <div style="font-size:10px;color:var(--text-muted)">Any role</div>
+    </div>
+  </div>
+</div>
+
+<div class="screen" id="s-raid">
+  <div id="raid-pre">
+    <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:500">Vaultbreaker</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;margin-bottom:10px">Final boss · Tier 1 · 0 guild kills</div>
+      <div style="height:7px;border-radius:4px;background:var(--surface-0);overflow:hidden;margin-bottom:4px"><div id="pre-hp-bar" style="height:100%;border-radius:4px;background:#dc2626;width:100%;transition:width .4s ease"></div></div>
+      <div style="font-size:10px;color:var(--text-muted)" id="pre-hp-txt">Boss HP: 100%</div>
+    </div>
+    <div class="sec">Wednesday raid — composition</div>
+    <div id="comp-grid" style="display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin-bottom:10px"></div>
+    <div style="font-size:11px;color:var(--text-warning);margin-bottom:10px">8/10 confirmed · 2 open slots · Fennick signed up as "maybe"</div>
+    <div style="display:flex;gap:6px"><button class="btn btn-p" onclick="startRaid()">Start raid night →</button></div>
+  </div>
+  <div id="raid-active" style="display:none">
+    <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:8px;padding:14px;margin-bottom:10px">
+      <div style="font-size:15px;font-weight:500">Vaultbreaker</div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:2px;margin-bottom:8px">Attempt <span id="att-num">1</span> · <span id="att-phase">Phase 1 — Stone skin</span></div>
+      <div style="height:7px;border-radius:4px;background:var(--surface-0);overflow:hidden;margin-bottom:3px"><div id="raid-hp-bar" style="height:100%;border-radius:4px;background:#dc2626;width:100%;transition:width .5s ease"></div></div>
+      <div style="font-size:10px;color:var(--text-muted)" id="raid-hp-txt">Boss HP: 100%</div>
+    </div>
+    <div class="sec">Attempt log</div>
+    <div id="att-log" style="background:var(--surface-0);border-radius:6px;padding:9px 10px;font-size:11px;line-height:1.9;font-family:var(--font-mono);max-height:180px;overflow-y:auto;margin-bottom:10px;white-space:pre-wrap"></div>
+    <div style="display:flex;gap:6px">
+      <button class="btn btn-p" id="roll-btn" onclick="rollAttempt()">Roll attempt →</button>
+      <button class="btn" id="end-btn" style="display:none" onclick="endRaid()">End raid night</button>
+    </div>
+  </div>
+  <div id="raid-loot" style="display:none">
+    <div id="loot-result" style="border-radius:8px;padding:12px 14px;margin-bottom:10px;text-align:center"></div>
+    <div class="sec">Loot — assign to eligible players</div>
+    <div id="loot-list"></div>
+    <div style="margin-top:8px"><button class="btn btn-p" onclick="confirmLoot()">Confirm loot →</button></div>
+  </div>
+</div>
+
+<div class="screen" id="s-history">
+  <div class="sec">Guild log</div>
+  <div id="hist-list" style="padding-left:10px;border-left:2px solid var(--border)"></div>
+</div>
+
+</div>
+<div class="bottom-bar">
+  <span style="font-size:11px;color:var(--text-muted)">Take action or advance to next day</span>
+  <button class="btn btn-p" onclick="advanceDay()">Next day →</button>
+</div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <div class="modal-title" id="m-title"></div>
+    <div class="modal-body" id="m-body"></div>
+    <div class="modal-actions" id="m-actions"></div>
+  </div>
+</div>
+
+<script>
+const DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const AVA_COLORS={
+  Mireille:'background:#dcfce7;color:#166534',
+  Daxon:'background:#fef3c7;color:#92400e',
+  Prismara:'background:#ede9fe;color:#5b21b6',
+  Boulderback:'background:#dbeafe;color:#1e40af',
+  Fennick:'background:#fef3c7;color:#92400e',
+  Thessaly:'background:#dcfce7;color:#166534',
+  Vornax:'background:#f1f5f9;color:#475569',
+  Jorveth:'background:#dbeafe;color:#1e40af',
+};
+
+function statColor(v){
+  if(v===null||v===undefined)return 'sv-unknown';
+  if(v>=8)return 'sv-hi';
+  if(v>=5)return 'sv-mid';
+  if(v>=3)return 'sv-lo';
+  return 'sv-crit';
+}
+function sv(val,revealed){
+  if(!revealed||val===null||val===undefined)return `<span class="sval sv-unknown">?</span>`;
+  return `<span class="sval ${statColor(val)}">${Math.round(val)}</span>`;
+}
+function moodColor(m){return m>=65?'#16a34a':m>=40?'#d97706':'#dc2626';}
+
+function mkState(){
+  return {
+    day:1,bossesKilled:0,rank:47,raidHP:100,raidAttempts:0,lootAssign:{},
+    history:[
+      {day:0,txt:'Thunderkeg rage-quits after wipe #23 on Vaultbreaker. Posts farewell manifesto in #general.',col:'#dc2626'},
+      {day:1,txt:'Guild votes Mireille as new Guild Leader. 5 for, 1 against (Prismara — "abstained"), 2 absent.',col:'#5b8dee'},
+    ],
+    notifs:[
+      {id:'daxon-sulk',icon:'ti-mood-sad',txt:"Daxon hasn't spoken in #general since Thunderkeg left. Raid signup: \"whatever\".",meta:'Today · Morale risk'},
+      {id:'prisma-essay',icon:'ti-writing',txt:'Prismara posted a 1,400-word breakdown of "leadership failures" in #officer-chat. Tagged you 6 times.',meta:'Today · Requires response'},
+      {id:'slots-empty',icon:'ti-user-plus',txt:"Two roster slots empty. You need at least a tank before Wednesday's raid.",meta:'Today · Roster gap'},
+      {id:'vornax-afk',icon:'ti-ghost',txt:"Vornax hasn't responded to the raid invite. Last login: 38 hours ago.",meta:'Today · Attendance risk'},
+    ],
+    applicants:[
+      {id:'app1',name:'Gryndal',cls:'Stoneguard',spec:'Warden',role:'Tank',status:'applied',currentGuild:null,
+       known:{roleSkill:7,mechSkill:null,reliability:null},
+       hidden:{ego:5,coachability:7,composure:8,loyalty:6,commitment:8,irlStability:8,transparency:7},
+       revealed:{},note:'Linked parse logs. Numbers look solid for a tank.',dramaFlags:[]},
+      {id:'app2',name:'Sylveth',cls:'Arcanist',spec:'Pyromancer',role:'DPS',status:'applied',currentGuild:null,
+       known:{roleSkill:8,mechSkill:null,reliability:null},
+       hidden:{ego:8,coachability:3,composure:3,loyalty:4,commitment:6,irlStability:7,transparency:5},
+       revealed:{},note:'Strong logs. Previously in "Eternal Vanguard" — left under unclear circumstances.',dramaFlags:['left-guild-unclear']},
+      {id:'app3',name:'Morrwick',cls:'Unknown',spec:'Unknown',role:'Unknown',status:'applied',currentGuild:'Ironpact',
+       known:{roleSkill:null,mechSkill:null,reliability:null},
+       hidden:{ego:6,coachability:6,composure:5,loyalty:5,commitment:7,irlStability:6,transparency:3},
+       revealed:{},note:'No logs linked. Message: "heard you have openings". Currently in Ironpact.',dramaFlags:['no-logs','in-guild']},
+    ],
+    roster:[
+      {name:'Mireille',cls:'Cleric',spec:'Holy',role:'Healer',morale:70,
+       known:{roleSkill:5,mechSkill:5,reliability:10,ego:2},
+       hidden:{coachability:9,composure:9,loyalty:10,commitment:10,irlStability:9,transparency:8},
+       revealed:{coachability:true,composure:true,loyalty:true,commitment:true,irlStability:true,transparency:true},
+       dramaFlags:[],notifs:[]},
+      {name:'Daxon',cls:'Warrior',spec:'Bladestorm',role:'DPS',morale:30,
+       known:{roleSkill:8,mechSkill:7,reliability:6,ego:8},
+       hidden:{coachability:4,composure:4,loyalty:6,commitment:7,irlStability:8,transparency:6},
+       revealed:{},dramaFlags:['sulking'],notifs:['Raid RSVP: "whatever"']},
+      {name:'Prismara',cls:'Arcanist',spec:'Frostweave',role:'DPS',morale:55,
+       known:{roleSkill:9,mechSkill:8,reliability:7,ego:9},
+       hidden:{coachability:3,composure:3,loyalty:5,commitment:8,irlStability:9,transparency:7},
+       revealed:{},dramaFlags:['vocal-ambition'],notifs:['1,400-word post in #officer-chat']},
+      {name:'Boulderback',cls:'Stoneguard',spec:'Fortress',role:'Tank',morale:72,
+       known:{roleSkill:7,mechSkill:6,reliability:8,ego:4},
+       hidden:{coachability:7,composure:8,loyalty:8,commitment:8,irlStability:8,transparency:5},
+       revealed:{},dramaFlags:[],notifs:[]},
+      {name:'Fennick',cls:'Rogue',spec:'Shadowstep',role:'DPS',morale:60,
+       known:{roleSkill:7,mechSkill:7,reliability:4,ego:5},
+       hidden:{coachability:5,composure:6,loyalty:6,commitment:5,irlStability:6,transparency:4},
+       revealed:{},dramaFlags:['chronically-late'],notifs:['RSVP: "maybe, depends on stuff"']},
+      {name:'Thessaly',cls:'Cleric',spec:'Restoration',role:'Healer',morale:65,
+       known:{roleSkill:6,mechSkill:6,reliability:9,ego:3},
+       hidden:{coachability:8,composure:9,loyalty:9,commitment:9,irlStability:8,transparency:6},
+       revealed:{},dramaFlags:[],notifs:[]},
+      {name:'Vornax',cls:'Warlock',spec:'Affliction',role:'DPS',morale:58,
+       known:{roleSkill:8,mechSkill:7,reliability:5,ego:6},
+       hidden:{coachability:4,composure:5,loyalty:4,commitment:4,irlStability:3,transparency:2},
+       revealed:{transparency:true},dramaFlags:['mysterious'],notifs:['No raid RSVP. Last online 38h ago.']},
+      {name:'Jorveth',cls:'Paladin',spec:'Retribution',role:'DPS',morale:62,
+       known:{roleSkill:5,mechSkill:5,reliability:9,ego:7},
+       hidden:{coachability:6,composure:7,loyalty:8,commitment:9,irlStability:9,transparency:8},
+       revealed:{},dramaFlags:['theorycrafter'],notifs:['Posted a 47-step Retribution guide. It has errors.']},
+    ],
+    expandedPlayer:null,
+  };
+}
+
+let S=(()=>{try{const d=localStorage.getItem('co_v3');return d?JSON.parse(d):mkState();}catch(e){return mkState();}})();
+function save(){try{localStorage.setItem('co_v3',JSON.stringify(S));}catch(e){}}
+
+function exportSave(){
+  const b=new Blob([JSON.stringify(S)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='crimsonoath-save.json';a.click();
+}
+function importSave(){
+  const inp=document.createElement('input');inp.type='file';inp.accept='.json';
+  inp.onchange=e=>{const r=new FileReader();r.onload=ev=>{
+    try{S=JSON.parse(ev.target.result);save();renderAll();showModal('Save loaded','Guild data imported.',[{l:'Continue',p:true,fn:closeModal}]);}
+    catch{showModal('Import failed','Not a valid save file.',[{l:'OK',p:true,fn:closeModal}]);}
+  };r.readAsText(e.target.files[0]);};inp.click();
+}
+
+function nav(id,btn){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+  document.getElementById('s-'+id).classList.add('on');
+  if(btn&&btn.classList)btn.classList.add('on');
+  else{const m={dashboard:0,roster:1,recruit:2,raid:3,history:4};const nb=document.querySelectorAll('.nb');if(m[id]!==undefined)nb[m[id]].classList.add('on');}
+}
+
+const HIDDEN_STAT_META={
+  coachability:{label:'Coachability',hint:'Have a feedback conversation or review their performance after a raid.'},
+  composure:{label:'Composure',hint:'Watch their behaviour during wipes and heated moments. Emerges over time.'},
+  loyalty:{label:'Loyalty',hint:'Only surfaces when tested — a rival guild contacts them, or a crisis forces a choice.'},
+  commitment:{label:'Commitment',hint:'Have an honest talk about availability, or observe their play time over several weeks.'},
+  irlStability:{label:'IRL stability',hint:"Gated by Transparency. If they're open, it emerges naturally. Private players keep it hidden until a real-life event forces it out."},
+  transparency:{label:'Transparency',hint:'Observable from how they communicate — guarded vs. open. Reveals itself quickly.'},
+};
+
+function renderRosterRow(p,i){
+  const av=AVA_COLORS[p.name]||'background:var(--surface-0);color:var(--text-muted)';
+  const exp=S.expandedPlayer===i;
+  const k=p.known;const h=p.hidden;const rv=p.revealed;
+  const roleCls={Tank:'role-T',Healer:'role-H',DPS:'role-D'}[p.role]||'';
+  const egoColor=statColor(10-k.ego);
+  return `<tr class="rrow${exp?' expanded':''}" onclick="toggleExpand(${i})">
+    <td><div class="ava" style="${av}">${p.name.slice(0,2).toUpperCase()}</div></td>
+    <td><div class="rname">${p.name}${p.name==='Mireille'?' <span style="font-size:10px;color:var(--text-muted)">(you)</span>':''}</div><div class="rcls">${p.cls} · ${p.spec}</div></td>
+    <td style="text-align:center"><span class="role-badge ${roleCls}">${p.role}</span></td>
+    <td style="text-align:center">${sv(k.roleSkill,true)}</td>
+    <td style="text-align:center">${sv(k.mechSkill,k.mechSkill!==null)}</td>
+    <td style="text-align:center">${sv(k.reliability,true)}</td>
+    <td style="text-align:center"><span class="sval ${egoColor}">${k.ego}</span></td>
+    <td style="text-align:center">${sv(h.composure,rv.composure)}</td>
+    <td style="text-align:center">${sv(h.coachability,rv.coachability)}</td>
+    <td style="text-align:center">${sv(h.loyalty,rv.loyalty)}</td>
+    <td style="text-align:center">${sv(h.commitment,rv.commitment)}</td>
+    <td style="text-align:center">${sv(h.transparency,rv.transparency)}</td>
+    <td style="text-align:center">${sv(h.irlStability,rv.irlStability)}</td>
+    <td><div class="mood-dot" style="background:${moodColor(p.morale)}" title="${p.morale}% morale — ${p.morale>=65?'Fine':p.morale>=40?'Tense':'Unhappy'}"></div></td>
+    <td style="color:var(--text-muted);font-size:10px;text-align:center">${exp?'▴':'▾'}</td>
+  </tr>
+  ${exp?`<tr><td colspan="15" style="padding:0">${renderExpanded(p,i)}</td></tr>`:''}`;
+}
+
+function renderExpanded(p,i){
+  const h=p.hidden;const rv=p.revealed;const k=p.known;
+  const hiddenRows=Object.entries(HIDDEN_STAT_META).map(([key,meta])=>{
+    const known=rv[key]||false;const val=h[key];
+    return `<div class="exp-row">
+      <span class="exp-label">${meta.label}</span>
+      <div class="exp-right">
+        ${known?`<span class="sval ${statColor(val)}" style="font-size:13px;font-weight:500">${val}</span>`
+          :`<span class="sval sv-unknown" style="font-size:13px">?</span><button class="reveal-tag" onclick="tryReveal(event,${i},'${key}')">how?</button>`}
+      </div>
+    </div>`;
+  }).join('');
+  const egoColor=statColor(10-k.ego);
+  const visRows=`
+    <div class="exp-row"><span class="exp-label">Role skill</span><div class="exp-right"><span class="sval ${statColor(k.roleSkill)}" style="font-size:13px;font-weight:500">${k.roleSkill}</span></div></div>
+    <div class="exp-row"><span class="exp-label">Mech skill</span><div class="exp-right">${k.mechSkill!==null?`<span class="sval ${statColor(k.mechSkill)}" style="font-size:13px;font-weight:500">${k.mechSkill}</span>`:`<span class="sval sv-unknown" style="font-size:13px">?</span>`}</div></div>
+    <div class="exp-row"><span class="exp-label">Reliability</span><div class="exp-right"><span class="sval ${statColor(k.reliability)}" style="font-size:13px;font-weight:500">${k.reliability}</span></div></div>
+    <div class="exp-row"><span class="exp-label">Ego</span><div class="exp-right"><span class="sval ${egoColor}" style="font-size:13px;font-weight:500">${k.ego}</span></div></div>`;
+  const flags=p.dramaFlags.map(f=>{
+    const m={'sulking':'tag-warn','vocal-ambition':'tag-warn','chronically-late':'tag-warn','mysterious':'tag-info','theorycrafter':'tag-info'};
+    const l={'sulking':'Sulking','vocal-ambition':'Ambitious','chronically-late':'Always late','mysterious':'Silent type','theorycrafter':'Theorycrafter'};
+    return `<span class="drama-tag ${m[f]||'tag-info'}">${l[f]||f}</span>`;
+  }).join('');
+  const notifHtml=p.notifs.length?`<div style="font-size:11px;color:var(--text-warning);padding:5px 7px;background:var(--bg-warning);border-radius:4px;margin-bottom:7px">${p.notifs[0]}</div>`:'';
+  return `<div class="expand-wrap">
+    ${notifHtml}
+    ${flags?`<div style="margin-bottom:7px">${flags}</div>`:''}
+    <div class="exp-grid">${visRows}${hiddenRows}</div>
+    <div style="font-size:10px;color:var(--text-muted);margin-bottom:7px">Morale: ${p.morale}%</div>
+    <div class="exp-actions">
+      ${p.name!=='Mireille'?`<button class="btn" onclick="msgPlayer(event,${i})">Message</button>`:''}
+      ${p.name!=='Mireille'?`<button class="btn" onclick="motivate(event,${i})">Motivate</button>`:''}
+      ${p.name!=='Mireille'&&p.morale<40?`<button class="btn btn-d" onclick="retentionTalk(event,${i})">Retention risk</button>`:''}
+    </div>
+  </div>`;
+}
+
+function toggleExpand(i){S.expandedPlayer=S.expandedPlayer===i?null:i;renderRoster();}
+
+function tryReveal(e,i,key){
+  e.stopPropagation();
+  const meta=HIDDEN_STAT_META[key];
+  showModal(`Reveal: ${meta.label}`,meta.hint,[{l:'Got it',p:true,fn:closeModal}]);
+}
+function revealStat(p,key){if(!p.revealed[key])p.revealed[key]=true;}
+
+function msgPlayer(e,i){
+  e.stopPropagation();
+  const p=S.roster[i];
+  showModal(`Message ${p.name}`,
+    `${p.name} · ${p.cls} ${p.spec}\nMorale: ${p.morale}%\n\n${p.notifs[0]||'Nothing urgent flagged.'}\n\nHow do you approach this?`,
+    [{l:'Check in casually',p:false,fn:()=>{p.morale=Math.min(100,p.morale+4);p.notifs=p.notifs.filter(n=>!n.includes('RSVP'));revealStat(p,'transparency');addH(`You checked in with ${p.name}. They seemed surprised anyone noticed.`,'#16a34a');save();renderAll();closeModal();}},
+     {l:'Acknowledge their concerns',p:true,fn:()=>{p.morale=Math.min(100,p.morale+9+(p.known.ego>7?4:0));p.notifs=[];revealStat(p,'coachability');revealStat(p,'transparency');addH(`You had a real conversation with ${p.name}. ${p.known.ego>7?'They appreciated the attention enormously.':'They seemed genuinely relieved.'}`,'#16a34a');save();renderAll();closeModal();}},
+     {l:'Leave it',p:false,fn:closeModal}]);
+}
+
+function motivate(e,i){
+  e.stopPropagation();
+  const p=S.roster[i];
+  if(p.morale>=88){showModal(`${p.name} is doing fine`,`At ${p.morale}% morale. Excessive attention might annoy someone with ego ${p.known.ego}.`,[{l:'Leave it',p:true,fn:closeModal}]);return;}
+  p.morale=Math.min(100,p.morale+10);
+  addH(`You motivated ${p.name}. Morale up to ${p.morale}%.`,'#16a34a');
+  save();renderAll();closeModal();
+}
+
+function retentionTalk(e,i){
+  e.stopPropagation();
+  const p=S.roster[i];
+  showModal(`${p.name} — retention risk`,
+    `Morale at ${p.morale}%. Players below 35% start looking around. A serious conversation takes more than a pep talk.`,
+    [{l:'Have a frank talk',p:true,fn:()=>{p.morale=Math.min(100,p.morale+18);revealStat(p,'loyalty');revealStat(p,'commitment');addH(`You had a frank retention conversation with ${p.name}.`,'#5b8dee');save();renderAll();closeModal();}},
+     {l:'Offer loot priority',p:false,fn:()=>{
+       const pr=S.roster.find(r=>r.name==='Prismara');
+       if(p.hidden.composure<5){addH(`You offered ${p.name} loot priority. They accepted. Prismara overheard.`,'#d97706');if(pr)pr.morale=Math.max(0,pr.morale-8);}
+       else{addH(`You offered ${p.name} loot priority. They seemed genuinely touched.`,'#16a34a');}
+       p.morale=Math.min(100,p.morale+20);save();renderAll();closeModal();
+     }},
+     {l:'Do nothing',p:false,fn:closeModal}]);
+}
+
+function renderRoster(){
+  document.getElementById('roster-body').innerHTML=S.roster.map((p,i)=>renderRosterRow(p,i)).join('');
+  document.getElementById('roster-count').textContent=`(${S.roster.length}/10)`;
+}
+
+function renderNotifs(){
+  const nl=document.getElementById('notif-list');
+  if(!S.notifs.length){nl.innerHTML=`<div style="font-size:12px;color:var(--text-muted);padding:10px 0">No urgent notifications. Enjoy it while it lasts.</div>`;return;}
+  nl.innerHTML=S.notifs.map((n,i)=>`
+    <div class="notif" onclick="handleNotif(${i})">
+      <div class="ndot"></div>
+      <i class="ti ${n.icon}" style="font-size:14px;margin-top:1px;flex-shrink:0"></i>
+      <div><div class="ntxt">${n.txt}</div><div class="nmeta">${n.meta}</div></div>
+    </div>`).join('');
+}
+
+function handleNotif(i){
+  const n=S.notifs[i];
+  const H={
+    'daxon-sulk':()=>showModal('Daxon is sulking',
+      "Thunderkeg's closest friend. Morale at 30%. High ego — he won't come to you first, and he won't respond well to being ignored.",
+      [{l:'Message him',p:true,fn:()=>{S.notifs.splice(i,1);closeModal();msgPlayer({stopPropagation:()=>{}},1);}},
+       {l:'Leave it',p:false,fn:()=>{S.notifs.splice(i,1);S.roster[1].morale=Math.max(0,S.roster[1].morale-6);addH('You left Daxon to stew. Morale ticked down.','#d97706');save();renderAll();closeModal();}}]),
+    'prisma-essay':()=>showModal("Prismara's 1,400-word post",
+      "Some points are valid. Others are thinly veiled job applications. Ignoring it looks weak. Validating everything will embolden her.",
+      [{l:'Acknowledge the valid parts',p:true,fn:()=>{S.roster[2].morale=Math.min(100,S.roster[2].morale+10);revealStat(S.roster[2],'coachability');S.notifs.splice(i,1);addH("You responded thoughtfully. Prismara is cautiously appeased — for now.",'#a78de8');save();renderAll();closeModal();}},
+       {l:'Post a guild values statement',p:false,fn:()=>{S.roster.forEach(p=>p.morale=Math.min(100,p.morale+3));S.notifs.splice(i,1);addH('You posted a guild values message. Most appreciated it. Prismara called it "avoidant" in DMs.','#5b8dee');save();renderAll();closeModal();}},
+       {l:'Dismiss it',p:false,fn:()=>{S.roster[2].morale=Math.max(0,S.roster[2].morale-15);S.notifs.splice(i,1);addH('You dismissed the post. Prismara is now actively angry.','#dc2626');save();renderAll();closeModal();}}]),
+    'slots-empty':()=>showModal('Two open slots',
+      'A second tank is the priority — single-tank 10-mans are a liability. Check the Recruit tab.',
+      [{l:'Go to recruit',p:true,fn:()=>{S.notifs.splice(i,1);nav('recruit',document.querySelectorAll('.nb')[2]);closeModal();}},
+       {l:'Noted',p:false,fn:()=>{S.notifs.splice(i,1);closeModal();}}]),
+    'vornax-afk':()=>showModal('Vornax is absent',
+      "No RSVP. No messages. His Transparency is very low — you have no idea what's going on. He's done this before and returned without comment.",
+      [{l:'Send a message',p:true,fn:()=>{S.roster[6].notifs=[];if(Math.random()>0.4){addH('Vornax replied with a thumbs up emoji six hours later.','#16a34a');}else{addH('Vornax did not respond.','#d97706');}S.notifs.splice(i,1);save();renderAll();closeModal();}},
+       {l:'Mark as uncertain',p:false,fn:()=>{S.notifs.splice(i,1);addH('Noted Vornax as uncertain for Wednesday.','#d97706');save();renderAll();closeModal();}}]),
+  };
+  if(H[n.id])H[n.id]();
+  else showModal(n.txt,'No further details.',[{l:'Dismiss',p:true,fn:()=>{S.notifs.splice(i,1);save();renderAll();closeModal();}}]);
+}
+
+function renderStats(){
+  const avg=Math.round(S.roster.reduce((a,p)=>a+p.morale,0)/S.roster.length);
+  document.getElementById('d-members').textContent=S.roster.length;
+  document.getElementById('d-morale').textContent=avg+'%';
+  document.getElementById('d-prog').textContent=S.bossesKilled+'/7';
+  document.getElementById('d-rank').textContent='#'+S.rank;
+  document.getElementById('day-lbl').textContent='Day '+S.day+' — '+DAYS[S.day%7];
+}
+
+function renderApplicants(){
+  const al=document.getElementById('app-list');
+  document.getElementById('app-count').textContent=`(${S.applicants.length})`;
+  if(!S.applicants.length){al.innerHTML=`<div style="font-size:12px;color:var(--text-muted);padding:8px 0;text-align:center">No applications. Post a recruitment notice below.</div>`;return;}
+  al.innerHTML=S.applicants.map((a,i)=>{
+    const stCls={applied:'st-applied',negotiating:'st-negotiating',poach:'st-poach'}[a.status];
+    const stLbl={applied:'Applied',negotiating:'Negotiating',poach:'Poaching target'}[a.status];
+    const k=a.known;
+    const ksHtml=[{l:'Role skill',v:k.roleSkill},{l:'Mech skill',v:k.mechSkill},{l:'Reliability',v:k.reliability}]
+      .map(s=>`<div class="ks"><span class="ks-label">${s.l}:</span>${s.v!==null?`<span style="font-weight:500;margin-left:3px;color:${s.v>=8?'#16a34a':s.v>=5?'var(--text-primary)':s.v>=3?'#d97706':'#dc2626'}">${s.v}</span>`:`<span style="color:var(--text-muted);margin-left:3px;font-style:italic">?</span>`}</div>`).join('');
+    const fHtml=a.dramaFlags.map(f=>{
+      const m={'left-guild-unclear':'tag-danger','no-logs':'tag-warn','in-guild':'tag-info'};
+      const l={'left-guild-unclear':'Left guild?','no-logs':'No logs','in-guild':'In another guild'};
+      return `<span class="drama-tag ${m[f]||'tag-info'}">${l[f]||f}</span>`;
+    }).join('');
+    return `<div class="app-card">
+      <div class="app-header">
+        <div class="ava" style="background:var(--surface-0);color:var(--text-muted);width:28px;height:28px;font-size:10px">${a.name.slice(0,2).toUpperCase()}</div>
+        <div class="app-info"><div class="app-name">${a.name}</div><div class="app-cls">${a.cls!=='Unknown'?a.cls+' · '+a.spec:'Class unknown'} · ${a.role!=='Unknown'?a.role:'Role unknown'}</div></div>
+        <span class="app-status ${stCls}">${stLbl}</span>
+        ${a.currentGuild?`<span class="guild-badge">${a.currentGuild}</span>`:''}
+      </div>
+      <div class="known-stats">${ksHtml}</div>
+      ${fHtml?`<div style="margin-bottom:6px">${fHtml}</div>`:''}
+      <div style="font-size:11px;color:var(--text-muted);margin-bottom:7px;font-style:italic">"${a.note}"</div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:8px"><i class="ti ti-eye-off" style="font-size:11px;vertical-align:-1px"></i> ${Object.keys(a.hidden).length-Object.keys(a.revealed||{}).length} stats hidden until you interact</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-p" onclick="recruitAction(${i},'invite')">Invite to trial</button>
+        <button class="btn" onclick="recruitAction(${i},'chat')">Ask questions</button>
+        ${a.currentGuild?`<button class="btn" onclick="recruitAction(${i},'poach')">Approach about leaving</button>`:''}
+        <button class="btn btn-d" onclick="recruitAction(${i},'decline')">Decline</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function recruitAction(i,action){
+  const a=S.applicants[i];
+  if(action==='invite'){
+    showModal(`Invite ${a.name} to trial`,
+      `${a.name} joins as a trial member. Hidden stats reveal over time through raids and interactions.`,
+      [{l:'Confirm trial',p:true,fn:()=>{
+        S.roster.push({name:a.name,cls:a.cls,spec:a.spec,role:a.role,morale:65,
+          known:{roleSkill:a.known.roleSkill||5,mechSkill:a.known.mechSkill,reliability:null,ego:null},
+          hidden:a.hidden,revealed:a.revealed||{},dramaFlags:a.dramaFlags,notifs:['Trial member.']});
+        S.applicants.splice(i,1);addH(`${a.name} joined as a trial member.`,'#5b8dee');
+        save();renderAll();closeModal();
+      }},{l:'Cancel',p:false,fn:closeModal}]);
+  } else if(action==='chat'){
+    const clue=a.hidden.composure<4?'They mention their last guild was "full of people who didn\'t appreciate real skill".'
+      :a.hidden.loyalty<5?'They ask a lot of questions about loot and schedule. Comparing notes.'
+      :'Seems genuine. Direct question, direct answer.';
+    a.revealed=a.revealed||{};
+    if(!a.revealed.chatDone){a.revealed.chatDone=true;if(a.hidden.composure<4)a.dramaFlags=[...new Set([...a.dramaFlags,'left-guild-unclear'])];}
+    showModal(`Conversation with ${a.name}`,clue,[{l:'Noted',p:true,fn:()=>{save();renderApplicants();closeModal();}}]);
+  } else if(action==='poach'){
+    showModal(`Approach ${a.name} about leaving ${a.currentGuild}`,
+      `Delicate. If their guild finds out, server-level drama follows. ${a.hidden.loyalty<5?'Their loyalty seems low — they might be open.':'You don\'t know their loyalty yet.'}`,
+      [{l:'Make a quiet approach',p:true,fn:()=>{
+        const ok=a.hidden.loyalty<6||Math.random()>0.5;
+        if(ok){a.status='negotiating';addH(`You approached ${a.name} quietly. They're open to talking.`,'#5b8dee');}
+        else{addH(`${a.name} declined. Hopefully ${a.currentGuild} doesn't hear about it.`,'#d97706');}
+        save();renderApplicants();closeModal();
+      }},{l:'Not yet',p:false,fn:closeModal}]);
+  } else if(action==='decline'){
+    showModal(`Decline ${a.name}`,'They\'ll be unavailable for a few weeks.',
+      [{l:'Confirm',p:false,fn:()=>{S.applicants.splice(i,1);addH(`Declined ${a.name}.`,'#888');save();renderApplicants();closeModal();}},
+       {l:'Cancel',p:false,fn:closeModal}]);
+  }
+}
+
+function postRecruit(type){
+  const msg=type==='tank'
+    ?'Posted: "Crimson Oath recruiting tank / off-healer. Semi-hardcore progression. Drama-free. (Working on it.)"'
+    :'Posted an open application. More interest, less targeted.';
+  addH(msg,'#5b8dee');
+  showModal('Recruitment posted',msg,[{l:'OK',p:true,fn:closeModal}]);
+  save();renderHistory();
+}
+
+function renderComp(){
+  const slots=[
+    {name:'Boulderback',role:'Tank',t:'tank'},{name:'Mireille',role:'Healer',t:'healer'},
+    {name:'Thessaly',role:'Healer',t:'healer'},{name:'Daxon',role:'DPS',t:'dps'},
+    {name:'Prismara',role:'DPS',t:'dps'},{name:'Fennick',role:'DPS',t:'dps'},
+    {name:'Vornax',role:'DPS',t:'dps'},{name:'Jorveth',role:'DPS',t:'dps'},
+    {name:'—',role:'Empty',t:'dps'},{name:'—',role:'Empty',t:'tank'},
+  ];
+  const bc={tank:'#5b8dee',healer:'#16a34a',dps:'#dc2626'};
+  document.getElementById('comp-grid').innerHTML=slots.map(s=>`
+    <div style="background:var(--surface-1);border:0.5px solid var(--border);border-radius:5px;padding:6px 5px;text-align:center;border-top:2px solid ${bc[s.t]};${s.name==='—'?'opacity:.4;border-style:dashed;border-top-style:dashed':''}">
+      <div style="font-size:11px;font-weight:500;color:var(--text-primary)">${s.name}</div>
+      <div style="font-size:10px;color:var(--text-muted)">${s.role}</div>
+    </div>`).join('');
+}
+
+const ATTEMPT_EVENTS=[
+  w=>'Jorveth posts a rotation tip in raid chat. Mid-pull.'+(w?' The raid wipes.':' Somehow nobody dies.'),
+  ()=>'Vornax disconnects at a critical moment. Returns without comment.',
+  ()=>'Prismara top-damages Phase 1. She mentions it in voice. Twice.',
+  ()=>'Daxon plays well but says nothing. The silence is louder than words.',
+  ()=>'Fennick pulls threat from Boulderback. A sigh is audible in voice.',
+  ()=>"Thessaly keeps everyone alive through sheer effort. Nobody thanks her.",
+  ()=>'The void phase begins. Jorveth has a guide. It is for the wrong boss.',
+  ()=>'Prismara and Daxon have a brief, cold exchange. Boulderback mutes himself.',
+];
+
+function logLine(html,text,color){
+  return html+`\n<span style="color:${color}">${text}</span>`;
+}
+
+function startRaid(){
+  S.raidHP=100;S.raidAttempts=0;
+  document.getElementById('raid-pre').style.display='none';
+  document.getElementById('raid-active').style.display='block';
+  document.getElementById('att-log').innerHTML=
+    `<span style="color:var(--text-secondary)">Raid night begins. Everyone is in voice.</span>\n<span style="color:#d97706">Fennick joined 7 minutes late. Blamed traffic.</span>`;
+  save();
+}
+
+function rollAttempt(){
+  S.raidAttempts++;
+  const avgSkill=S.roster.reduce((a,p)=>a+p.known.roleSkill,0)/S.roster.length;
+  const avgMorale=S.roster.reduce((a,p)=>a+p.morale,0)/S.roster.length;
+  const threshold=(avgSkill*5)+(avgMorale*0.25)-12;
+  const roll=Math.random()*100;
+  const success=roll<threshold;
+  const log=document.getElementById('att-log');
+  let html=log.innerHTML;
+  html=logLine(html,`--- Attempt ${S.raidAttempts} ---`,'var(--text-muted)');
+  html=logLine(html,ATTEMPT_EVENTS[Math.floor(Math.random()*ATTEMPT_EVENTS.length)](success&&roll>threshold-10),'#d97706');
+  if(success){
+    const dmg=Math.floor(Math.random()*25)+18;
+    S.raidHP=Math.max(0,S.raidHP-dmg);
+    html=logLine(html,`Clean pull. Vaultbreaker at ${S.raidHP}% HP.`,'#16a34a');
+    if(S.raidHP<=0){
+      html=logLine(html,'VAULTBREAKER DEFEATED. GUILD FIRST.','#16a34a');
+      document.getElementById('roll-btn').style.display='none';
+      document.getElementById('end-btn').style.display='inline-flex';
+    }
+  } else {
+    html=logLine(html,`Wipe. Boss at ${S.raidHP}%.`,'#dc2626');
+    if(S.raidAttempts>=7&&S.raidHP>30)html=logLine(html,'Morale is fraying. People are checking the time.','#d97706');
+    if(S.raidAttempts>=9){
+      html=logLine(html,'Prismara logs off "for reasons". Two others follow.','#dc2626');
+      document.getElementById('roll-btn').style.display='none';
+      document.getElementById('end-btn').style.display='inline-flex';
+    }
+    S.roster.forEach(p=>{if(Math.random()<0.3)p.morale=Math.max(10,p.morale-2);});
+  }
+  document.getElementById('raid-hp-bar').style.width=S.raidHP+'%';
+  document.getElementById('raid-hp-txt').textContent='Boss HP: '+S.raidHP+'%';
+  document.getElementById('att-num').textContent=S.raidAttempts;
+  log.innerHTML=html;log.scrollTop=log.scrollHeight;
+  save();
+}
+
+const LOOT=[
+  {name:'Vault Sentinel Chestplate',type:'Plate armour',eligible:['Boulderback','Mireille']},
+  {name:'Whispering Asp Daggers',type:'Agility weapons',eligible:['Fennick','Vornax']},
+  {name:'Ring of Fractured Stone',type:'Caster ring',eligible:['Prismara','Thessaly','Mireille']},
+  {name:"Vaultbreaker's Tome",type:'Spell trinket',eligible:['Prismara','Thessaly','Vornax']},
+];
+
+function endRaid(){
+  const killed=S.raidHP<=0;
+  document.getElementById('raid-active').style.display='none';
+  document.getElementById('raid-loot').style.display='block';
+  const rb=document.getElementById('loot-result');
+  if(killed){
+    rb.style.cssText='border-radius:8px;padding:12px 14px;margin-bottom:10px;text-align:center;background:var(--bg-success);border:0.5px solid var(--border-success)';
+    rb.innerHTML=`<div style="font-size:15px;font-weight:500;color:var(--text-success)">Vaultbreaker defeated</div><div style="font-size:12px;color:var(--text-secondary);margin-top:3px">Guild first · ${S.raidAttempts} attempt${S.raidAttempts!==1?'s':''} · The guild erupts in voice chat, then immediately argues about who performed best.</div>`;
+    S.bossesKilled++;S.rank=Math.max(1,S.rank-Math.floor(Math.random()*5+3));
+    S.roster.forEach(p=>p.morale=Math.min(100,p.morale+15));
+  } else {
+    rb.style.cssText='border-radius:8px;padding:12px 14px;margin-bottom:10px;text-align:center;background:var(--bg-danger);border:0.5px solid var(--border-danger)';
+    rb.innerHTML=`<div style="font-size:15px;font-weight:500;color:var(--text-danger)">No kill tonight</div><div style="font-size:12px;color:var(--text-secondary);margin-top:3px">${S.raidAttempts} attempts · ${S.raidHP}% HP remaining</div>`;
+    S.roster.forEach(p=>p.morale=Math.max(20,p.morale-7));
+  }
+  S.lootAssign={};
+  document.getElementById('loot-list').innerHTML=LOOT.slice(0,killed?4:2).map((item,i)=>`
+    <div style="display:flex;align-items:center;gap:8px;padding:7px 9px;background:var(--surface-1);border:0.5px solid var(--border);border-radius:6px;margin-bottom:5px">
+      <i class="ti ti-crown" style="font-size:14px;color:var(--text-muted)"></i>
+      <div style="flex:1"><div style="font-size:12px;font-weight:500">${item.name}</div><div style="font-size:10px;color:var(--text-muted)">${item.type}</div></div>
+      <select style="font-size:11px;padding:3px 6px;border-radius:4px;border:0.5px solid var(--border-strong);background:var(--surface-0);color:var(--text-primary);font-family:var(--font-sans)" onchange="assignL('${item.name}',this.value)">
+        <option value="">— assign —</option>
+        ${item.eligible.filter(n=>S.roster.find(r=>r.name===n)).map(n=>`<option value="${n}">${n}</option>`).join('')}
+      </select>
+    </div>`).join('');
+  save();renderStats();
+}
+
+function assignL(item,player){
+  if(player){S.lootAssign[item]=player;const p=S.roster.find(r=>r.name===player);if(p){p.morale=Math.min(100,p.morale+12);p.known.roleSkill=Math.min(10,+(p.known.roleSkill+0.5).toFixed(1));}}
+}
+
+function confirmLoot(){
+  const e=Object.entries(S.lootAssign);
+  addH(e.length?'Loot: '+e.map(([k,v])=>`${k} → ${v}`).join(', ')+'.':'No loot assigned — all disenchanted.','#d97706');
+  S.raidHP=100;S.raidAttempts=0;
+  document.getElementById('raid-loot').style.display='none';
+  document.getElementById('raid-pre').style.display='block';
+  document.getElementById('roll-btn').style.display='inline-flex';
+  document.getElementById('end-btn').style.display='none';
+  document.getElementById('pre-hp-bar').style.width='100%';
+  document.getElementById('pre-hp-txt').textContent='Boss HP: 100%';
+  save();renderAll();nav('history',null);
+}
+
+function addH(txt,col){S.history.push({day:S.day,txt,col:col||'#5b8dee'});}
+
+function renderHistory(){
+  document.getElementById('hist-list').innerHTML=S.history.slice().reverse().map(h=>`
+    <div style="position:relative;padding:0 0 10px 14px">
+      <div style="position:absolute;left:-5px;top:4px;width:9px;height:9px;border-radius:50%;background:${h.col};border:2px solid var(--surface-2)"></div>
+      <div style="font-size:10px;color:var(--text-muted);margin-bottom:1px">Day ${h.day} — ${DAYS[h.day%7]}</div>
+      <div style="font-size:12px;color:var(--text-primary)">${h.txt}</div>
+    </div>`).join('');
+}
+
+function advanceDay(){
+  S.day++;
+  S.roster.forEach(p=>{
+    if(p.name==='Mireille')return;
+    p.morale=Math.max(10,Math.min(100,p.morale+(Math.random()-0.52)*5));
+    if(p.hidden.irlStability<5&&!p.revealed.irlStability&&p.hidden.transparency<5&&Math.random()<0.1){
+      p.revealed.irlStability=true;
+      S.notifs.push({id:'irl-'+p.name,icon:'ti-alert-triangle',txt:`${p.name} mentioned something about a new job in passing.`,meta:`Day ${S.day} · IRL event`});
+    }
+    if(p.morale<35&&Math.random()<0.12){
+      S.notifs.push({id:'low-'+p.name+S.day,icon:'ti-mood-sad',txt:`${p.name}'s morale is critically low (${Math.round(p.morale)}%). They may start looking around.`,meta:`Day ${S.day} · Retention risk`});
+    }
+  });
+  if(Math.random()<0.18&&S.day>2){
+    const drama=[
+      'Jorveth and Prismara debate in #theory-crafting. Jorveth is wrong but refuses to accept it.',
+      "Vornax hasn't been seen for 3 days. Last online: 72 hours ago.",
+      'Someone posted "some people don\'t appreciate real skill". Definitely Daxon.',
+      'A player from a rival guild whispered Prismara. She hasn\'t mentioned it.',
+      'Fennick asks if the raid could start 45 minutes later. "Because of stuff."',
+    ];
+    addH(drama[Math.floor(Math.random()*drama.length)],'#d97706');
+  }
+  if(S.day%3===0&&S.applicants.length<5){
+    const names=['Thorryn','Velindra','Kaspik','Bryndas','Osrath','Lunavel','Zynthari','Corvath'];
+    const clss=[{cls:'Warrior',spec:'Phalanx',role:'Tank'},{cls:'Cleric',spec:'Holy',role:'Healer'},{cls:'Rogue',spec:'Venomstrike',role:'DPS'},{cls:'Arcanist',spec:'Stormweave',role:'DPS'},{cls:'Paladin',spec:'Bulwark',role:'Tank'}];
+    const pick=clss[Math.floor(Math.random()*clss.length)];
+    const name=names[Math.floor(Math.random()*names.length)];
+    S.applicants.push({
+      id:'app'+Date.now(),name,cls:pick.cls,spec:pick.spec,role:pick.role,
+      status:'applied',currentGuild:Math.random()>0.6?['Ironpact','Eternal Vanguard','The Forsaken'][Math.floor(Math.random()*3)]:null,
+      known:{roleSkill:Math.floor(Math.random()*4)+5,mechSkill:null,reliability:null},
+      hidden:{ego:Math.ceil(Math.random()*9),coachability:Math.ceil(Math.random()*9),composure:Math.ceil(Math.random()*9),loyalty:Math.ceil(Math.random()*9),commitment:Math.ceil(Math.random()*9),irlStability:Math.ceil(Math.random()*9),transparency:Math.ceil(Math.random()*9)},
+      revealed:{},note:'Applied via the guild forum.',dramaFlags:Math.random()>0.7?['left-guild-unclear']:[],
+    });
+    S.notifs.push({id:'newapp-'+name,icon:'ti-user-plus',txt:`New application from ${name} (${pick.cls} · ${pick.spec}).`,meta:`Day ${S.day}`});
+  }
+  save();renderAll();
+}
+
+function renderAll(){renderStats();renderNotifs();renderRoster();renderApplicants();renderComp();renderHistory();}
+
+function showModal(title,body,actions){
+  document.getElementById('m-title').textContent=title;
+  document.getElementById('m-body').textContent=body;
+  const ma=document.getElementById('m-actions');ma.innerHTML='';
+  actions.forEach(a=>{const b=document.createElement('button');b.className='btn'+(a.p?' btn-p':'');b.textContent=a.l;b.onclick=a.fn;ma.appendChild(b);});
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+document.getElementById('modal-overlay').addEventListener('click',e=>{if(e.target===document.getElementById('modal-overlay'))closeModal();});
+
+renderAll();
+</script>
+</body>
+</html>
